@@ -1,56 +1,51 @@
 const WebSocket = require('ws');
-const fs = require('fs');
 const uuidv1 = require('uuid/v1');
-
-
+const fs = require('fs');
 const wss = new WebSocket.Server({port: 5501});
+let userOnServer = [];
 
 wss.on('connection', function connection(ws) {
+    const clientId = uuidv1();
+    userOnServer = [...userOnServer, clientId];
     ws.on('message', function incoming(message) {
         const request = JSON.parse(message);
         console.log(request);
 
-        switch (request.type){
-            case 'login':
-                console.log(request.payload);
-
+        switch (request.type) {
+            case 'LOGIN':
                 const response = {
-                    type: 'login',
-                    payload:{
-                        status: 200,
-                        id: uuidv1()
+                    type: 'LOGIN_RESPONSE',
+                    payload: {
+                        clientId: clientId
                     }
                 }
-
                 ws.send(JSON.stringify(response));
                 break;
-            case 'logout':
-                console.log(request.payload);
+            case 'LOGOUT':
+                console.log('LOGOUT')
                 break;
             default:
-                console.log('Unknown request');
+                console.log('Unknown event')
                 break;
         }
-        // console.log('received: %s', message);
+
     });
-
-    ws.send('something');
 });
-
 //
-
-
-
-wss.on('close', function(){
-    console.log('Client left');
-});
-
-
+// //
 //
-// wss.on('connection', function (ws) {
-//     ws.on('message', function (data) {
-//     }
 //
-//     ws.on('close', function () {
-//     });
-// }
+//
+// wss.on('close', function(){
+//     console.log('Client left');
+// });
+//
+//
+// //
+// // wss.on('connection', function (ws) {
+// //     ws.on('message', function (data) {
+// //     }
+// //
+// //     ws.on('close', function () {
+// //     });
+// // }
